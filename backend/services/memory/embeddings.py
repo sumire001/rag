@@ -23,6 +23,7 @@ import os
 import re
 import struct
 import threading
+from pathlib import Path
 
 import numpy as np
 from config import Config
@@ -31,6 +32,8 @@ from config import Config
 os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "20")
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+# HuggingFace 国内镜像（回退路径走 hf-mirror，避免直连超时）
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 
 logger = logging.getLogger("memory")
 
@@ -92,12 +95,49 @@ class ModelNotReady(Exception):
     """瞬时：本地模型还在后台加载中，本次跳过记忆即可。"""
 
 
+def _resolve_local_model_path() -> str:
+    """确定 local embedding 模型的加载源，优先级从高到低：
+
+    1) Config.MEMORY_EMBEDDING_MODEL_DIR（用户显式指定的本地模型目录）
+    2) backend/data/models 下已缓存的模型（之前 ModelScope 下载过）
+    3) ModelScope（魔搭）在线下载到 backend/data/models（国内可达，无需翻墙）
+    4) 回退 HuggingFace（sentence-transformers 默认行为，已设 HF_ENDPOINT 镜像）
+
+    返回本地目录路径或模型名（让 SentenceTransformer 自行处理）。
+    """
+    explicit = (Config.MEMORY_EMBEDDING_MODEL_DIR or "").strip()
+    if explicit:
+        if os.path.isdir(explicit):
+            return explicit
+        logger.warning("MEMORY_EMBEDDING_MODEL_DIR 不存在，忽略：%s", explicit)
+
+    model_name = Config.MEMORY_EMBEDDING_MODEL
+    cache_dir = str(Path(Config.DB_PATH).resolve().parent / "models")
+
+    # 已缓存（modelscope 目录结构：cache_dir/<model_id>）
+    cached = Path(cache_dir) / model_name
+    if cached.is_dir() and (cached / "config.json").exists():
+        return str(cached)
+
+    # ModelScope（魔搭）：模型 id 与 HuggingFace 一致
+    try:
+        from modelscope import snapshot_download
+
+        local = snapshot_download(model_name, cache_dir=cache_dir)
+        logger.info("已从 ModelScope 下载模型：%s -> %s", model_name, local)
+        return local
+    except Exception as e:
+        logger.warning("ModelScope 下载失败，回退 HuggingFace：%s", e)
+
+    return model_name
+
+
 def _background_load():
     global _LOCAL_MODEL, _LOCAL_STATE
     try:
         from sentence_transformers import SentenceTransformer
 
-        model = SentenceTransformer(Config.MEMORY_EMBEDDING_MODEL)
+        model = SentenceTransformer(_resolve_local_model_path())
         with _LOCK:
             _LOCAL_MODEL = model
             _LOCAL_STATE = "ready"

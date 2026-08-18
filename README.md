@@ -75,6 +75,7 @@ python -m http.server 5500      # 浏览器打开 http://127.0.0.1:5500
 | `LLM_TEMPERATURE` | 0.7 | 采样温度 |
 | `RAG_MODE` | rag_first | 回复模式 strict / rag_first |
 | `MEMORY_EMBEDDING_PROVIDER` | local | 记忆向量来源 local / openai / lexical |
+| `MEMORY_EMBEDDING_MODEL_DIR` | 空 | local 模型目录：留空自动从魔搭(HF)下载到 `backend/data/models`；指定则用本地目录（离线） |
 | `FEISHU_ENABLED` | 0 | 是否随后端启用飞书 |
 | `FEISHU_APP_ID` / `FEISHU_APP_SECRET` | 空 | 飞书开放平台应用凭证 |
 | `FEISHU_ENCRYPT_KEY` / `FEISHU_VERIFICATION_TOKEN` | 空 | 事件加密 / 校验令牌（可选） |

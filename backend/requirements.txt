@@ -9,3 +9,5 @@ pypdf>=4.0.0
 python-docx>=1.1.0
 openpyxl>=3.1.0
 waitress>=3.0.0
+# 仅 local embedding 需要：让 BGE 模型从 ModelScope（魔搭）下载，国内无需翻墙
+modelscope>=1.9.0

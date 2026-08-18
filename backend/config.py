@@ -45,6 +45,9 @@ class Config:
     #                 lexical = 词袋+特征哈希，纯本地零模型、断网可用（只认字面重合）
     MEMORY_EMBEDDING_PROVIDER = os.getenv("MEMORY_EMBEDDING_PROVIDER", "local")
     MEMORY_EMBEDDING_MODEL = os.getenv("MEMORY_EMBEDDING_MODEL", "BAAI/bge-small-zh-v1.5")
+    # local 模式模型加载源：留空 = 自动从 ModelScope(魔搭)/HuggingFace 下载到 backend/data/models；
+    # 指定 = 直接使用该本地目录中的模型（如自己用魔搭下载解压后的目录）
+    MEMORY_EMBEDDING_MODEL_DIR = os.getenv("MEMORY_EMBEDDING_MODEL_DIR", "")
     MEMORY_EMBEDDING_BASE_URL = os.getenv("MEMORY_EMBEDDING_BASE_URL", "https://api.openai.com/v1")
     MEMORY_EMBEDDING_API_KEY = os.getenv("MEMORY_EMBEDDING_API_KEY", "")
     MEMORY_TOP_K = int(os.getenv("MEMORY_TOP_K", "5"))     # 召回条数
