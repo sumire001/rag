@@ -16,6 +16,7 @@ from flask import Blueprint, request
 from config import Config
 from models import store
 from services.documents import service as doc_service
+from services.rag import service as rag_service
 from utils.response import fail, ok
 
 logger = logging.getLogger("api.documents")
@@ -59,6 +60,12 @@ def upload():
         return fail(f"文档处理异常：{e}")
 
     # 处理成功后保留磁盘文件（在 DOC_UPLOAD_DIR），供后续下载/重解析；删除文档时一并清理
+    # 有新分块则重建 RAG 内存索引，保证上传后问答立即可检索到
+    if result.get("status") == "done" and result.get("chunk_count", 0) > 0:
+        try:
+            rag_service.rebuild_index()
+        except Exception:
+            logger.exception("上传后重建 RAG 索引失败")
     return ok({
         "id": result["id"],
         "filename": result["filename"],

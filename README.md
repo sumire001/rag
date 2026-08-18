@@ -19,7 +19,7 @@
   - `echo`：离线回声模式，无需任何 Key，开箱即用
   - `openai`：任意 OpenAI 兼容接口（DeepSeek / 通义百炼 / 混元 / 本地 Ollama 等）
 - **记忆系统**：层1 会话内早期摘要 + 层2 跨会话向量召回（支持 local / openai / lexical 三种 embedding 来源）
-- **文档管理**：上传 PDF / Word / Excel / CSV / TXT / MD，自动解析与父子切块入库
+- **文档管理**：上传 PDF / Word / Excel / CSV / TXT / MD，自动解析与父子切块入库；支持**目录自动导入**（把文档丢进 `data/import/` 即自动处理入库）
 - **飞书机器人**：群聊（@机器人）与私聊均可，与 Web 端共用会话与知识库
 - **命令路由**：`/mode`、`/help`、`/clear`（中英文等价），Web 与飞书行为一致
 
@@ -49,6 +49,7 @@ python -m http.server 5500      # 浏览器打开 http://127.0.0.1:5500
 | `start_backend.bat` | 仅后端（自动清理 5000 端口残留进程） |
 | `start_frontend.bat` | 仅前端静态服务器 |
 | `start_feishu.bat` | 仅飞书长连接通道 |
+| `start_ingest.bat` | 文档目录自动入库监听（`data/import/`） |
 
 > 前端必须通过静态服务器访问（双击 `index.html` 会触发 `file://` 跨域限制）。
 
@@ -82,9 +83,37 @@ Web 界面左下角「设置」可动态修改模型配置（**无需重启**）
 
 ## 知识库入库
 
-- 通过 API 上传：`POST /api/documents/upload`（multipart，字段名 `file`），支持
-  `.pdf .docx .xlsx .xls .csv .txt .md`，上传后自动解析切块并进入检索索引
-- 内置知识库（《通用IT知识.docx》）可用脚本导入：
+### 方式一：目录自动导入（推荐）
+
+把文档丢进一个目录，自动解析、切块、入库：
+
+```bash
+mkdir backend\data\import        # 首次需手动创建投放目录
+# 把 PDF / Word / Excel / CSV / TXT / MD 丢进去，然后：
+cd backend
+.venv\Scripts\python.exe _ingest_dir.py      # 一次性批量导入
+# 或常驻监听（新文件放进去即自动入库，约 5 秒一轮）：
+.venv\Scripts\python.exe _watch_ingest.py
+# Windows 下也可直接运行 start_ingest.bat 启动监听
+```
+
+目录约定（均在 `backend/data/` 下）：
+
+| 目录 | 作用 |
+| --- | --- |
+| `import/` | 投放目录：把文档放进来即可被处理 |
+| `imported/` | 成功入库的文档自动归档到这里 |
+| `import_failed/` | 解析失败 / 不支持格式的文件移到这里（附原因） |
+
+特性：按文件内容 md5 幂等去重（重复放置不会产生脏数据）、跳过 `~$` 临时文件与隐藏文件、
+入库后自动重建 RAG 索引（问答立即可检索到新文档）。
+
+### 方式二：API 上传
+
+`POST /api/documents/upload`（multipart，字段名 `file`），支持
+`.pdf .docx .xlsx .xls .csv .txt .md`，上传后自动解析切块并重建检索索引。
+
+### 方式三：内置知识库脚本
 
 ```bash
 cd backend
@@ -115,18 +144,21 @@ MyProject/
 │   ├── .env.example              # 环境变量模板
 │   ├── api/                      # 路由层（chat / config / documents）
 │   ├── models/store.py           # SQLite 持久化
+│   ├── _ingest_doc.py            # 内置知识库（通用IT知识）入库脚本
+│   ├── _ingest_dir.py            # 目录批量导入（一次性）
+│   ├── _watch_ingest.py          # 目录自动监听（常驻）
 │   ├── services/
 │   │   ├── chat_service.py       # Web 端业务编排（RAG + 记忆索引）
 │   │   ├── llm_provider.py       # 模型适配：echo / OpenAI 兼容
 │   │   ├── command_router.py     # /mode /help /clear 命令路由
 │   │   ├── runtime_config.py     # 运行时配置（页面可改，落盘 config.json）
 │   │   ├── rag/                  # RAG：词法检索 + 父子回溯 + 回复模式
-│   │   ├── documents/            # 文档解析（PDF/Word/Excel/CSV/TXT/MD）+ 切块
+│   │   ├── documents/            # 文档解析切块 + 目录自动导入（ingester）
 │   │   ├── memory/               # 记忆：会话摘要 + 跨会话向量召回
 │   │   └── feishu/               # 飞书长连接：dispatcher / sessions / client
-│   └── data/                     # SQLite、config.json、uploads（不入库）
+│   └── data/                     # SQLite、config.json、import、uploads（不入库）
 ├── frontend/                     # 原生 HTML/CSS/JS，SSE 流式对话
-├── start_all.bat / start_backend.bat / start_frontend.bat / start_feishu.bat
+├── start_all.bat / start_backend.bat / start_frontend.bat / start_feishu.bat / start_ingest.bat
 ├── LICENSE                       # MIT 许可
 ├── THIRD_PARTY_NOTICES.md        # 第三方组件许可声明
 └── README.md
