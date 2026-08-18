@@ -1,18 +1,19 @@
 @echo off
 rem ============================================================
-rem  EduRAG 一键环境准备：首次运行自动建 venv + 装依赖 + 生成 .env
-rem  幂等：环境已就绪时秒过，不影响日常启动速度
-rem  被各 start_*.bat 调用（call），失败返回非 0
+rem  EduRAG one-click environment setup:
+rem  create venv + install dependencies + generate .env on first run
+rem  Idempotent: returns immediately if environment is already ready
+rem  Called by start_*.bat scripts (call), exit code 1 on failure
 rem ============================================================
 setlocal
 cd /d "%~dp0backend"
 
-rem ---- 已就绪则直接返回（被 start_*.bat 调用时静默，单独双击时给出提示）----
+rem ---- Already ready? Return immediately ----
 if exist ".venv\Scripts\python.exe" (
     if exist ".env" (
         if not defined SETUP_SILENT (
             echo.
-            echo [环境] 已就绪：虚拟环境与依赖完整，无需重新安装。
+            echo [env] Ready: virtual environment and dependencies already installed.
             echo.
             timeout /t 3 >nul
         )
@@ -21,55 +22,55 @@ if exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo [环境] 首次运行检测：开始准备 Python 虚拟环境与依赖（已装过则自动跳过）...
+echo [env] First run detected: preparing Python virtual environment...
 echo.
 
-rem ---- 1. 找一个可用的系统 Python ----
+rem ---- 1. Find a usable system Python ----
 set "PYTHON_CMD="
 python --version >nul 2>&1 && set "PYTHON_CMD=python"
 if not defined PYTHON_CMD (
     py -3 --version >nul 2>&1 && set "PYTHON_CMD=py -3"
 )
 if not defined PYTHON_CMD (
-    echo [错误] 未检测到 Python，请先安装 Python 3.10 或更高版本：
+    echo [ERROR] Python 3.10 or newer not found. Please install it from:
     echo         https://www.python.org/downloads/
-    echo         安装时请务必勾选 "Add Python to PATH"。
+    echo         and check "Add Python to PATH" during installation.
     pause
     exit /b 1
 )
 
-rem ---- 2. 创建虚拟环境 ----
+rem ---- 2. Create virtual environment ----
 if not exist ".venv\Scripts\python.exe" (
-    echo [环境] 创建虚拟环境 .venv ...
+    echo [env] Creating virtual environment .venv ...
     %PYTHON_CMD% -m venv .venv
     if errorlevel 1 (
-        echo [错误] 虚拟环境创建失败，请确认 Python 版本 >= 3.10
+        echo [ERROR] Failed to create venv. Python 3.10+ is required.
         pause
         exit /b 1
     )
 )
 
-rem ---- 3. 安装依赖（默认国内镜像，失败自动回退官方源）----
-echo [环境] 安装依赖，首次约需 2~5 分钟，请耐心等待 ...
+rem ---- 3. Install dependencies (CN mirror first, fallback to official PyPI) ----
+echo [env] Installing dependencies, first time takes 2-5 minutes...
 set "PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple"
 ".venv\Scripts\python.exe" -m pip install --upgrade pip -i %PIP_INDEX% >nul 2>&1
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt -i %PIP_INDEX%
 if errorlevel 1 (
-    echo [提示] 国内镜像安装失败，回退官方源重试 ...
+    echo [hint] Mirror install failed, retrying with official PyPI...
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
     if errorlevel 1 (
-        echo [错误] 依赖安装失败，请检查网络后重新运行本脚本
+        echo [ERROR] Dependency install failed. Check your network and retry.
         pause
         exit /b 1
     )
 )
 
-rem ---- 4. 生成 .env（不存在时）----
+rem ---- 4. Generate .env if missing ----
 if not exist ".env" (
     copy ".env.example" ".env" >nul
-    echo [环境] 已从 .env.example 生成 .env（默认 Echo 离线模式，无需任何 Key）
+    echo [env] Created .env from .env.example (default: echo offline mode, no key needed).
 )
 
-echo [环境] 就绪：虚拟环境 + 依赖 + .env 均已准备
+echo [env] Ready: venv + dependencies + .env all set.
 endlocal
 exit /b 0

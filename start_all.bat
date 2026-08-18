@@ -1,21 +1,21 @@
 @echo off
-title MyProject 启动器 (后端 + 前端 + 飞书)
+title EduRAG Launcher (backend + frontend + feishu)
 cd /d "%~dp0"
 
-rem 首次运行自动建 venv + 装依赖 + 生成 .env（已就绪则静默秒过）
+rem Auto setup env on first run (silent if ready)
 set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
-start "MyProject 后端 (5000)" start_backend.bat
-start "MyProject 前端 (5500)" start_frontend.bat
-start "MyProject 飞书长连接" start_feishu.bat
-echo 已分别在新窗口启动后端、前端和飞书通道。
-echo 前端： http://127.0.0.1:5500
-echo 后端： http://127.0.0.1:5000
+start "EduRAG Backend (5000)" start_backend.bat
+start "EduRAG Frontend (5500)" start_frontend.bat
+start "EduRAG Feishu bot" start_feishu.bat
+echo Started backend, frontend and feishu in separate windows.
+echo Frontend: http://127.0.0.1:5500
+echo Backend:  http://127.0.0.1:5000
 echo.
-echo 提示：
-echo  - 每个服务都在独立窗口运行，关闭本窗口不会影响它们
-echo  - 飞书长连接启动较慢（需连接飞书服务器鉴权），请到窗口看日志
-echo  - 按任意键关闭本启动器窗口
+echo Notes:
+echo  - Each service runs in its own window; closing this launcher is safe.
+echo  - Feishu connects to Lark servers on startup, wait for its log window.
+echo  - Press any key to close this launcher window.
 pause >nul

@@ -1,15 +1,15 @@
 @echo off
-title 飞书机器人通道 (长连接)
+title Feishu bot channel (long connection)
 cd /d "%~dp0backend"
 
-rem 首次运行自动建 venv + 装依赖 + 生成 .env（已就绪则静默秒过）
+rem Auto setup env on first run (silent if ready)
 set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
-echo 正在启动飞书长连接通道...
-echo 请确保 .env 已配置 FEISHU_APP_ID / FEISHU_APP_SECRET
-echo 按 Ctrl+C 停止，关闭窗口也会退出
+echo Starting Feishu long-connection channel...
+echo Make sure FEISHU_APP_ID / FEISHU_APP_SECRET are set in backend/.env
+echo Press Ctrl+C to stop, or close this window.
 echo.
 .venv\Scripts\python.exe -m services.feishu.longpoll
 pause
