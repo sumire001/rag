@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title ºó¶Ë·şÎñ (Flask + waitress)
 cd /d "%~dp0backend"
 

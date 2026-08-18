@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title 飞书机器人通道 (长连接)
 cd /d "%~dp0backend"
 

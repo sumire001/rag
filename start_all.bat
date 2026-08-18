@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title MyProject 启动器 (后端 + 前端 + 飞书)
 cd /d "%~dp0"
 

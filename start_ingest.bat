@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title MyProject 文档自动入库 (监听 data/import)
 cd /d "%~dp0backend"
 

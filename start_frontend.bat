@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 title 前端服务 (静态服务器 :5500)
 cd /d "%~dp0frontend"
 
