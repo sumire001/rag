@@ -11,6 +11,7 @@ import logging
 import numpy as np
 from config import Config
 
+from services import runtime_config
 from services.memory import embeddings, vector_store
 
 logger = logging.getLogger("memory")
@@ -26,15 +27,24 @@ def _probe_available() -> bool:
         _MEMORY_AVAILABLE = False
         return False
     try:
-        provider = (Config.MEMORY_EMBEDDING_PROVIDER or "local").lower()
+        # provider 运行时配置优先（WebUI 可改），缺省取环境变量
+        provider = (
+            runtime_config.get("mem_emb_provider")
+            or Config.MEMORY_EMBEDDING_PROVIDER
+            or "local"
+        ).lower()
         if provider == "openai":
-            ok = bool(Config.MEMORY_EMBEDDING_API_KEY)
+            ok = bool(
+                runtime_config.get("mem_emb_api_key") or Config.MEMORY_EMBEDDING_API_KEY
+            )
         elif provider == "lexical":
             ok = True  # 纯本地词袋，无需模型 / key
         else:  # local
             import importlib
             importlib.import_module("sentence_transformers")
             ok = True
+            # 注意：模型加载失败不在此判定——embed() 会自动回退远程接口（若已配置），
+            # 或由 _safe_embed 捕获 EmbeddingError 后停用。
     except Exception as e:
         logger.warning("记忆功能不可用，已停用：%s", e)
         ok = False

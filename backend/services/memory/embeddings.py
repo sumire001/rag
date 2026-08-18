@@ -28,6 +28,8 @@ from pathlib import Path
 import numpy as np
 from config import Config
 
+from services import runtime_config
+
 # 缩短 HuggingFace 下载超时、关掉进度条，避免后台线程长时间空转
 os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "20")
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
@@ -194,12 +196,22 @@ def _embed_local(texts, is_query):
     return np.asarray(vecs, dtype=np.float32)
 
 
+def _remote_embedding_configured() -> bool:
+    """远程向量接口是否已配置（base_url 有默认值，关键看 api_key）。"""
+    key = runtime_config.get("mem_emb_api_key") or Config.MEMORY_EMBEDDING_API_KEY
+    return bool(key)
+
+
 def _embed_openai(texts):
     import requests
 
-    url = Config.MEMORY_EMBEDDING_BASE_URL.rstrip("/") + "/embeddings"
+    base = (runtime_config.get("mem_emb_base_url") or Config.MEMORY_EMBEDDING_BASE_URL).strip()
+    api_key = runtime_config.get("mem_emb_api_key") or Config.MEMORY_EMBEDDING_API_KEY
+    model = runtime_config.get("mem_emb_model") or Config.MEMORY_EMBEDDING_MODEL
+
+    url = base.rstrip("/") + "/embeddings"
     headers = {
-        "Authorization": f"Bearer {Config.MEMORY_EMBEDDING_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
     out = []
@@ -207,7 +219,7 @@ def _embed_openai(texts):
         r = requests.post(
             url,
             headers=headers,
-            json={"model": Config.MEMORY_EMBEDDING_MODEL, "input": t},
+            json={"model": model, "input": t},
             timeout=Config.LLM_TIMEOUT,
         )
         if r.status_code != 200:
@@ -219,16 +231,27 @@ def _embed_openai(texts):
 def embed(texts, is_query=False):
     """返回 (n, dim) float32 数组；空输入返回 (0,1)。
 
-    provider 由 config.MEMORY_EMBEDDING_PROVIDER 决定：
-        local   -> 本地 bge 模型（后台线程懒加载）
+    provider 由运行时配置 mem_emb_provider 决定（WebUI 可改，缺省取环境变量）：
+        local   -> 本地 bge 模型（后台线程懒加载）；本地不可用且已配置远程接口时自动兜底
         openai  -> 远程 /embeddings 接口
-        lexical -> 词袋 + 特征哈希（默认 fallback 之外的新增分支）
+        lexical -> 词袋 + 特征哈希
     """
     if not texts:
         return np.zeros((0, 1), dtype=np.float32)
-    provider = (Config.MEMORY_EMBEDDING_PROVIDER or "local").lower()
+    provider = (
+        runtime_config.get("mem_emb_provider")
+        or Config.MEMORY_EMBEDDING_PROVIDER
+        or "local"
+    ).lower()
     if provider == "openai":
         return _embed_openai(texts)
     if provider == "lexical":
         return _embed_lexical(texts)
-    return _embed_local(texts, is_query)
+    # local：本地模型优先；加载失败（永久不可用）且远程已配置 → 自动兜底远程向量接口
+    try:
+        return _embed_local(texts, is_query)
+    except EmbeddingError:
+        if _remote_embedding_configured():
+            logger.info("本地 embedding 不可用，自动回退远程向量接口")
+            return _embed_openai(texts)
+        raise

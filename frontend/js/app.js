@@ -11,6 +11,7 @@
     sending: false,
     controller: null, // 流式请求的 AbortController
     clearKey: false, // 设置面板里是否要清除已有密钥
+    clearMemKey: false, // 设置面板里是否要清除已有向量密钥
   };
 
   // ---------------- 初始化 ----------------
@@ -217,6 +218,11 @@
     temp: document.getElementById('cfg-temp'),
     tempVal: document.getElementById('cfg-temp-val'),
     strict: document.getElementById('cfg-strict'),
+    memProvider: document.getElementById('cfg-mem-provider'),
+    memBaseUrl: document.getElementById('cfg-mem-base-url'),
+    memApiKey: document.getElementById('cfg-mem-api-key'),
+    memKeyHint: document.getElementById('cfg-mem-key-hint'),
+    memModel: document.getElementById('cfg-mem-model'),
     msg: document.getElementById('settings-msg'),
   };
 
@@ -224,7 +230,9 @@
     settings.msg.textContent = '';
     settings.msg.classList.remove('ok');
     settings.apiKey.value = '';
+    settings.memApiKey.value = '';
     state.clearKey = false;
+    state.clearMemKey = false;
     settings.panel.hidden = false;
 
     Api.getConfig()
@@ -237,6 +245,12 @@
         settings.strict.checked = cfg.rag_mode === 'strict';
         settings.keyHint.textContent = cfg.api_key_set ? '已配置密钥（留空保持不变）' : '尚未配置密钥';
         settings.apiKey.placeholder = cfg.api_key_set ? cfg.api_key || '留空则不修改' : '留空则不修改';
+
+        settings.memProvider.value = cfg.mem_emb_provider || 'local';
+        settings.memBaseUrl.value = cfg.mem_emb_base_url || '';
+        settings.memModel.value = cfg.mem_emb_model || '';
+        settings.memKeyHint.textContent = cfg.mem_emb_api_key_set ? '已配置密钥（留空保持不变）' : '尚未配置密钥';
+        settings.memApiKey.placeholder = cfg.mem_emb_api_key_set ? cfg.mem_emb_api_key || '留空则不修改' : '留空则不修改';
       })
       .catch((e) => {
         settings.msg.textContent = e.message;
@@ -254,6 +268,13 @@
     UI.toast('保存时将清除密钥');
   }
 
+  function clearMemKey() {
+    state.clearMemKey = true;
+    settings.memApiKey.value = '';
+    settings.memKeyHint.textContent = '保存后将清除已配置的向量密钥';
+    UI.toast('保存时将清除向量密钥');
+  }
+
   async function saveSettings() {
     settings.msg.textContent = '';
     settings.msg.classList.remove('ok');
@@ -264,11 +285,19 @@
       model: settings.model.value.trim(),
       temperature: parseFloat(settings.temp.value),
       rag_mode: settings.strict.checked ? 'strict' : 'rag_first',
+      mem_emb_provider: settings.memProvider.value,
+      mem_emb_base_url: settings.memBaseUrl.value.trim(),
+      mem_emb_model: settings.memModel.value.trim(),
     };
     if (state.clearKey) {
       payload.api_key = '__CLEAR__';
     } else if (settings.apiKey.value.trim()) {
       payload.api_key = settings.apiKey.value.trim();
+    }
+    if (state.clearMemKey) {
+      payload.mem_emb_api_key = '__CLEAR__';
+    } else if (settings.memApiKey.value.trim()) {
+      payload.mem_emb_api_key = settings.memApiKey.value.trim();
     }
 
     try {
@@ -276,9 +305,13 @@
       settings.msg.textContent = '已保存';
       settings.msg.classList.add('ok');
       state.clearKey = false;
+      state.clearMemKey = false;
       settings.keyHint.textContent = cfg.api_key_set ? '已配置密钥（留空保持不变）' : '尚未配置密钥';
       settings.apiKey.placeholder = cfg.api_key_set ? cfg.api_key || '留空则不修改' : '留空则不修改';
       settings.apiKey.value = '';
+      settings.memKeyHint.textContent = cfg.mem_emb_api_key_set ? '已配置密钥（留空保持不变）' : '尚未配置密钥';
+      settings.memApiKey.placeholder = cfg.mem_emb_api_key_set ? cfg.mem_emb_api_key || '留空则不修改' : '留空则不修改';
+      settings.memApiKey.value = '';
       UI.toast('设置已保存');
       await checkHealth(); // 同步左下角状态（provider 可能变了）
     } catch (e) {
@@ -295,12 +328,19 @@
       settings.keyHint.textContent = '输入新密钥以覆盖';
     }
   });
+  settings.memApiKey.addEventListener('input', () => {
+    if (settings.memApiKey.value.trim()) {
+      state.clearMemKey = false;
+      settings.memKeyHint.textContent = '输入新密钥以覆盖';
+    }
+  });
 
   document.getElementById('btn-settings').addEventListener('click', openSettings);
   document.getElementById('btn-settings-close').addEventListener('click', closeSettings);
   document.getElementById('btn-settings-cancel').addEventListener('click', closeSettings);
   document.getElementById('btn-settings-save').addEventListener('click', saveSettings);
   document.getElementById('btn-clear-key').addEventListener('click', clearKey);
+  document.getElementById('btn-clear-mem-key').addEventListener('click', clearMemKey);
 
   // ---------------- 事件 ----------------
   function bindEvents() {

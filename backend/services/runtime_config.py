@@ -37,6 +37,11 @@ _DEFAULTS = {
     "rag_min_score": 0.12,  # RAG 检索相似度阈值：低于则视为「未命中」
     "rag_min_shared": 2,    # RAG 检索最小共享 token 数：lexical 哈希碰撞可能让乱码低分擦边，
                             # 要求命中分块与 query 至少有 N 个真实共享 token，过滤碰撞型假阳性
+    # 记忆向量模型（WebUI 可配；local 不可用时可用远程接口兜底）
+    "mem_emb_provider": Config.MEMORY_EMBEDDING_PROVIDER,  # local / openai / lexical
+    "mem_emb_base_url": Config.MEMORY_EMBEDDING_BASE_URL,
+    "mem_emb_api_key": Config.MEMORY_EMBEDDING_API_KEY,
+    "mem_emb_model": Config.MEMORY_EMBEDDING_MODEL,
 }
 
 _runtime = dict(_DEFAULTS)
@@ -68,18 +73,27 @@ def to_public():
     """对外返回：api_key 脱敏，并附带是否已配置标记。"""
     with _LOCK:
         cfg = dict(_runtime)
-    key = cfg.get("api_key") or ""
-    cfg["api_key_set"] = bool(key)
-    if key:
-        cfg["api_key"] = (key[:6] + "…" + key[-4:]) if len(key) > 10 else "••••"
-    else:
-        cfg["api_key"] = ""
+    _mask_key(cfg, "api_key")
+    _mask_key(cfg, "mem_emb_api_key")
     return cfg
+
+
+def _mask_key(cfg: dict, field: str):
+    """把明文密钥替换为掩码 + 是否已配置标记（前端不回传完整密钥）。"""
+    key = cfg.get(field) or ""
+    cfg[f"{field}_set"] = bool(key)
+    if key:
+        cfg[field] = (key[:6] + "…" + key[-4:]) if len(key) > 10 else "••••"
+    else:
+        cfg[field] = ""
 
 
 def update(data: dict):
     """合并更新并落盘。返回脱敏后的配置。"""
-    allowed = {"provider", "base_url", "api_key", "model", "temperature", "rag_mode"}
+    allowed = {
+        "provider", "base_url", "api_key", "model", "temperature", "rag_mode",
+        "mem_emb_provider", "mem_emb_base_url", "mem_emb_api_key", "mem_emb_model",
+    }
     incoming = {k: v for k, v in data.items() if k in allowed}
 
     with _LOCK:
@@ -97,6 +111,20 @@ def update(data: dict):
             ak = ""                            # 显式清除
         else:
             ak = str(ak).strip()
+
+        # 记忆向量模型：provider 限 local/openai/lexical，api_key 同 LLM 的清除语义
+        mem_provider = str(incoming.get("mem_emb_provider", _runtime["mem_emb_provider"])).strip().lower()
+        if mem_provider not in ("local", "openai", "lexical"):
+            raise ValueError("向量来源只能是 local / openai / lexical")
+        mem_base_url = str(incoming.get("mem_emb_base_url", _runtime["mem_emb_base_url"])).strip()
+        mem_model = str(incoming.get("mem_emb_model", _runtime["mem_emb_model"])).strip()
+        mem_ak = incoming.get("mem_emb_api_key", None)
+        if mem_ak is None:
+            mem_ak = _runtime["mem_emb_api_key"]
+        elif isinstance(mem_ak, str) and mem_ak == "__CLEAR__":
+            mem_ak = ""
+        else:
+            mem_ak = str(mem_ak).strip()
 
         try:
             temp = float(incoming.get("temperature", _runtime["temperature"]))
@@ -121,6 +149,10 @@ def update(data: dict):
             "model": model,
             "temperature": temp,
             "rag_mode": mode,
+            "mem_emb_provider": mem_provider,
+            "mem_emb_base_url": mem_base_url,
+            "mem_emb_api_key": mem_ak,
+            "mem_emb_model": mem_model,
         })
         _save()
         return to_public()

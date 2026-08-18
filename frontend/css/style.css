@@ -579,6 +579,17 @@ body {
   margin: 4px 0;
 }
 
+.settings-panel__divider {
+  margin: 4px -14px 0;
+  padding: 10px 14px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
 .settings-panel__msg {
   font-size: 12px;
   min-height: 16px;
