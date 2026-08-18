@@ -1,0 +1,31 @@
+@echo off
+title MyProject 后端服务 (Flask + waitress)
+cd /d "%~dp0backend"
+
+if not exist ".venv\Scripts\python.exe" (
+    echo [错误] 未找到虚拟环境 backend\.venv\Scripts\python.exe
+    echo 请先创建并安装依赖：
+    echo   python -m venv .venv
+    echo   .venv\Scripts\pip install -r requirements.txt
+    pause
+    exit /b 1
+)
+
+echo [清理] 释放 5000 端口残留进程（防止旧实例占着不放）
+set "PORT_PIDS="
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr /R /C:":5000 .*LISTENING"') do (
+    set "PORT_PIDS=!PORT_PIDS! %%p"
+)
+if defined PORT_PIDS (
+    echo        待清理 PID:!PORT_PIDS!
+    for %%p in (!PORT_PIDS!) do taskkill /F /PID %%p >nul 2>&1
+    timeout /t 1 /nobreak >nul
+) else (
+    echo        端口空闲
+)
+
+echo 正在启动后端服务： http://127.0.0.1:5000
+echo 按 Ctrl+C 停止，关闭窗口也会退出
+echo.
+.venv\Scripts\python.exe app.py
+pause
