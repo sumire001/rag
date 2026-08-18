@@ -89,6 +89,18 @@ Web 界面左下角「设置」可动态修改模型配置（**无需重启**）
 - API Base URL / API Key / 模型名称 / 温度
 - 严格按知识库回答（对应 `RAG_MODE`）
 
+### 记忆系统 embedding 模型
+
+跨会话向量召回默认用本地 bge 模型（`BAAI/bge-small-zh-v1.5`），首次使用时自动下载，加载源优先级：
+
+1. `MEMORY_EMBEDDING_MODEL_DIR` 显式指定的本地模型目录（完全离线）；
+2. `backend/data/models` 下已缓存的模型；
+3. **魔搭 ModelScope** 在线下载到 `backend/data/models`（国内可达，无需代理）；
+4. 回退 **HuggingFace**（走 `hf-mirror` 镜像）。
+
+模型在后台线程加载，未就绪或下载失败时记忆召回自动跳过，不影响主对话。无需本地模型的场景可把
+`MEMORY_EMBEDDING_PROVIDER` 设为 `lexical`（零模型纯词法）或 `openai`（远程接口）。
+
 ## 知识库入库
 
 ### 方式一：目录自动导入（推荐）

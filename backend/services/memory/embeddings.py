@@ -113,11 +113,20 @@ def _resolve_local_model_path() -> str:
 
     model_name = Config.MEMORY_EMBEDDING_MODEL
     cache_dir = str(Path(Config.DB_PATH).resolve().parent / "models")
+    cache_root = Path(cache_dir)
 
-    # 已缓存（modelscope 目录结构：cache_dir/<model_id>）
-    cached = Path(cache_dir) / model_name
-    if cached.is_dir() and (cached / "config.json").exists():
-        return str(cached)
+    # 已缓存：新版 modelscope 布局 cache_dir/models/<org>--<name>/snapshots/<rev>/
+    org, _, name = model_name.partition("/")
+    if org and name:
+        snapshots = cache_root / "models" / f"{org}--{name}" / "snapshots"
+        if snapshots.is_dir():
+            for rev in snapshots.iterdir():
+                if (rev / "config.json").is_file():
+                    return str(rev)
+    # 旧版布局 cache_dir/<org>/<name>/
+    legacy = cache_root / model_name
+    if legacy.is_dir() and (legacy / "config.json").is_file():
+        return str(legacy)
 
     # ModelScope（魔搭）：模型 id 与 HuggingFace 一致
     try:
