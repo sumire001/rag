@@ -2,14 +2,9 @@
 title MyProject 文档自动入库 (监听 data/import)
 cd /d "%~dp0backend"
 
-if not exist ".venv\Scripts\python.exe" (
-    echo [错误] 未找到虚拟环境 backend\.venv\Scripts\python.exe
-    echo 请先创建并安装依赖：
-    echo   python -m venv .venv
-    echo   .venv\Scripts\pip install -r requirements.txt
-    pause
-    exit /b 1
-)
+rem 首次运行自动建 venv + 装依赖（已就绪则秒过）
+call "%~dp0setup_env.bat"
+if errorlevel 1 exit /b 1
 
 echo 正在启动文档目录监听...
 echo 把文档放进 backend\data\import\ 即自动解析入库（约 5 秒一轮）

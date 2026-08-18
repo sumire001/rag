@@ -1,6 +1,11 @@
 @echo off
 title MyProject 启动器 (后端 + 前端 + 飞书)
 cd /d "%~dp0"
+
+rem 首次运行自动建 venv + 装依赖 + 生成 .env（已就绪则秒过）
+call "%~dp0setup_env.bat"
+if errorlevel 1 exit /b 1
+
 start "MyProject 后端 (5000)" start_backend.bat
 start "MyProject 前端 (5500)" start_frontend.bat
 start "MyProject 飞书长连接" start_feishu.bat
@@ -10,6 +15,6 @@ echo 后端： http://127.0.0.1:5000
 echo.
 echo 提示：
 echo  - 每个服务都在独立窗口运行，关闭本窗口不会影响它们
-echo  - 飞书长连接启动较慢（需连接飞书服务器鉴权），请到「MyProject 飞书长连接」窗口看日志
+echo  - 飞书长连接启动较慢（需连接飞书服务器鉴权），请到窗口看日志
 echo  - 按任意键关闭本启动器窗口
 pause >nul

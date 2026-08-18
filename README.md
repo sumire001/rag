@@ -41,15 +41,20 @@ cd frontend
 python -m http.server 5500      # 浏览器打开 http://127.0.0.1:5500
 ```
 
-### 方式二：启动脚本（Windows）
+### 方式二：启动脚本（Windows，推荐）
+
+**直接双击 `start_all.bat` 即可**：首次运行会自动完成环境准备
+（检测 Python → 创建 `backend\.venv` → 安装依赖 → 从 `.env.example` 生成 `.env`，
+全程约 2~5 分钟），随后弹出三个窗口分别启动后端、前端、飞书通道；再次启动秒过。
 
 | 脚本 | 作用 |
 | --- | --- |
-| `start_all.bat` | 一键启动 后端 + 前端 + 飞书（三个独立窗口） |
+| `start_all.bat` | 一键：自动装依赖 + 启动 后端 + 前端 + 飞书（三个独立窗口） |
 | `start_backend.bat` | 仅后端（自动清理 5000 端口残留进程） |
 | `start_frontend.bat` | 仅前端静态服务器 |
 | `start_feishu.bat` | 仅飞书长连接通道 |
 | `start_ingest.bat` | 文档目录自动入库监听（`data/import/`） |
+| `setup_env.bat` | 环境准备（被上面脚本自动调用；也可单独运行） |
 
 > 前端必须通过静态服务器访问（双击 `index.html` 会触发 `file://` 跨域限制）。
 
@@ -158,7 +163,7 @@ MyProject/
 │   │   └── feishu/               # 飞书长连接：dispatcher / sessions / client
 │   └── data/                     # SQLite、config.json、import、uploads（不入库）
 ├── frontend/                     # 原生 HTML/CSS/JS，SSE 流式对话
-├── start_all.bat / start_backend.bat / start_frontend.bat / start_feishu.bat / start_ingest.bat
+├── start_all.bat / start_backend.bat / start_frontend.bat / start_feishu.bat / start_ingest.bat / setup_env.bat
 ├── LICENSE                       # MIT 许可
 ├── THIRD_PARTY_NOTICES.md        # 第三方组件许可声明
 └── README.md
