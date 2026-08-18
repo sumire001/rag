@@ -590,6 +590,49 @@ body {
   letter-spacing: 0.02em;
 }
 
+.settings-panel__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.settings-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.settings-tab:hover {
+  color: var(--text);
+}
+
+.settings-tab.is-active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.settings-tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 1px;
+}
+
+.settings-pane[hidden] {
+  display: none;
+}
+
 .settings-panel__msg {
   font-size: 12px;
   min-height: 16px;

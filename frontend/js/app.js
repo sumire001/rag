@@ -12,6 +12,7 @@
     controller: null, // 流式请求的 AbortController
     clearKey: false, // 设置面板里是否要清除已有密钥
     clearMemKey: false, // 设置面板里是否要清除已有向量密钥
+    settingsTab: localStorage.getItem('edu_rag_settings_tab') || 'llm', // 设置面板当前 tab
   };
 
   // ---------------- 初始化 ----------------
@@ -233,6 +234,7 @@
     settings.memApiKey.value = '';
     state.clearKey = false;
     state.clearMemKey = false;
+    switchTab(state.settingsTab, false); // 恢复上次离开时的 tab
     settings.panel.hidden = false;
 
     Api.getConfig()
@@ -273,6 +275,19 @@
     settings.memApiKey.value = '';
     settings.memKeyHint.textContent = '保存后将清除已配置的向量密钥';
     UI.toast('保存时将清除向量密钥');
+  }
+
+  function switchTab(tab, persist = true) {
+    const valid = tab === 'mem' ? 'mem' : 'llm';
+    state.settingsTab = valid;
+    document.querySelectorAll('.settings-tab').forEach((btn) => {
+      const on = btn.dataset.tab === valid;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.getElementById('pane-llm').hidden = valid !== 'llm';
+    document.getElementById('pane-mem').hidden = valid !== 'mem';
+    if (persist) localStorage.setItem('edu_rag_settings_tab', valid);
   }
 
   async function saveSettings() {
@@ -341,6 +356,9 @@
   document.getElementById('btn-settings-save').addEventListener('click', saveSettings);
   document.getElementById('btn-clear-key').addEventListener('click', clearKey);
   document.getElementById('btn-clear-mem-key').addEventListener('click', clearMemKey);
+  document.querySelectorAll('.settings-tab').forEach((btn) => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
 
   // ---------------- 事件 ----------------
   function bindEvents() {

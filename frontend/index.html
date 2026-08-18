@@ -67,76 +67,86 @@
     </main>
   </div>
 
-  <!-- 左下角设置面板：配置 LLM API Key 等 -->
+  <!-- 左下角设置面板：tab 切换「对话模型 / 向量模型」 -->
   <div class="settings-panel" id="settings-panel" hidden>
     <div class="settings-panel__head">
       <span>模型设置</span>
       <button class="settings-panel__close" id="btn-settings-close" aria-label="关闭">×</button>
     </div>
+    <div class="settings-panel__tabs" role="tablist">
+      <button class="settings-tab is-active" data-tab="llm" role="tab" aria-selected="true">对话模型</button>
+      <button class="settings-tab" data-tab="mem" role="tab" aria-selected="false">向量模型</button>
+    </div>
     <div class="settings-panel__body">
-      <label class="field">
-        <span class="field__label">模型类型</span>
-        <select id="cfg-provider">
-          <option value="echo">Echo（离线回声，无需 Key）</option>
-          <option value="openai">OpenAI 兼容</option>
-        </select>
-      </label>
-      <label class="field">
-        <span class="field__label">API Base URL</span>
-        <input id="cfg-base-url" type="text" placeholder="https://api.openai.com/v1" autocomplete="off">
-      </label>
-      <label class="field">
-        <span class="field__label">API Key</span>
-        <div class="field__key">
-          <input id="cfg-api-key" type="password" placeholder="留空则不修改" autocomplete="off">
-          <button type="button" class="link-btn" id="btn-clear-key">清除</button>
-        </div>
-        <span class="field__hint" id="cfg-key-hint"></span>
-      </label>
-      <label class="field">
-        <span class="field__label">模型名称</span>
-        <input id="cfg-model" type="text" placeholder="gpt-4o-mini" autocomplete="off">
-      </label>
-      <label class="field">
-        <span class="field__label">
-          温度 <span class="field__val" id="cfg-temp-val">0.7</span>
-        </span>
-        <input id="cfg-temp" type="range" min="0" max="2" step="0.1" value="0.7">
-      </label>
-      <div class="field--switch">
-        <label class="switch">
-          <input type="checkbox" id="cfg-strict">
-          <span class="field__label">严格按知识库回答</span>
+      <!-- 对话模型 tab -->
+      <div class="settings-pane" id="pane-llm" role="tabpanel">
+        <label class="field">
+          <span class="field__label">模型类型</span>
+          <select id="cfg-provider">
+            <option value="echo">Echo（离线回声，无需 Key）</option>
+            <option value="openai">OpenAI 兼容</option>
+          </select>
         </label>
-        <span class="field__hint">开启后仅依据《通用IT知识》回答，资料缺失时直接拒答（不调用模型通用知识）。关闭则为「优先」模式。</span>
+        <label class="field">
+          <span class="field__label">API Base URL</span>
+          <input id="cfg-base-url" type="text" placeholder="https://api.openai.com/v1" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field__label">API Key</span>
+          <div class="field__key">
+            <input id="cfg-api-key" type="password" placeholder="留空则不修改" autocomplete="off">
+            <button type="button" class="link-btn" id="btn-clear-key">清除</button>
+          </div>
+          <span class="field__hint" id="cfg-key-hint"></span>
+        </label>
+        <label class="field">
+          <span class="field__label">模型名称</span>
+          <input id="cfg-model" type="text" placeholder="gpt-4o-mini" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field__label">
+            温度 <span class="field__val" id="cfg-temp-val">0.7</span>
+          </span>
+          <input id="cfg-temp" type="range" min="0" max="2" step="0.1" value="0.7">
+        </label>
+        <div class="field--switch">
+          <label class="switch">
+            <input type="checkbox" id="cfg-strict">
+            <span class="field__label">严格按知识库回答</span>
+          </label>
+          <span class="field__hint">开启后仅依据《通用IT知识》回答，资料缺失时直接拒答（不调用模型通用知识）。关闭则为「优先」模式。</span>
+        </div>
       </div>
 
-      <div class="settings-panel__divider">向量模型（记忆召回）</div>
-      <label class="field">
-        <span class="field__label">向量来源</span>
-        <select id="cfg-mem-provider">
-          <option value="local">本地模型（bge，默认）</option>
-          <option value="openai">远程接口（OpenAI 兼容）</option>
-          <option value="lexical">离线词法（无需模型）</option>
-        </select>
-      </label>
-      <label class="field">
-        <span class="field__label">向量 API Base URL</span>
-        <input id="cfg-mem-base-url" type="text" placeholder="https://api.openai.com/v1" autocomplete="off">
-      </label>
-      <label class="field">
-        <span class="field__label">向量 API Key</span>
-        <div class="field__key">
-          <input id="cfg-mem-api-key" type="password" placeholder="留空则不修改" autocomplete="off">
-          <button type="button" class="link-btn" id="btn-clear-mem-key">清除</button>
-        </div>
-        <span class="field__hint" id="cfg-mem-key-hint"></span>
-      </label>
-      <label class="field">
-        <span class="field__label">向量模型名称</span>
-        <input id="cfg-mem-model" type="text" placeholder="text-embedding-v3 / bge-m3" autocomplete="off">
-      </label>
-      <span class="field__hint">本地模型不可用且已配置远程接口（API Key 非空）时，记忆召回自动改用远程向量模型兜底。</span>
+      <!-- 向量模型 tab -->
+      <div class="settings-pane" id="pane-mem" role="tabpanel" hidden>
+        <label class="field">
+          <span class="field__label">向量来源</span>
+          <select id="cfg-mem-provider">
+            <option value="local">本地模型（bge，默认）</option>
+            <option value="openai">远程接口（OpenAI 兼容）</option>
+            <option value="lexical">离线词法（无需模型）</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">向量 API Base URL</span>
+          <input id="cfg-mem-base-url" type="text" placeholder="https://api.openai.com/v1" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field__label">向量 API Key</span>
+          <div class="field__key">
+            <input id="cfg-mem-api-key" type="password" placeholder="留空则不修改" autocomplete="off">
+            <button type="button" class="link-btn" id="btn-clear-mem-key">清除</button>
+          </div>
+          <span class="field__hint" id="cfg-mem-key-hint"></span>
+        </label>
+        <label class="field">
+          <span class="field__label">向量模型名称</span>
+          <input id="cfg-mem-model" type="text" placeholder="text-embedding-v3 / bge-m3" autocomplete="off">
+        </label>
+        <span class="field__hint">本地模型不可用且已配置远程接口（API Key 非空）时，记忆召回自动改用远程向量模型兜底。</span>
+      </div>
+
       <div class="settings-panel__msg" id="settings-msg"></div>
     </div>
     <div class="settings-panel__foot">
