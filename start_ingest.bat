@@ -1,17 +1,16 @@
 @echo off
-chcp 65001 >nul
-title MyProject æ–‡æ¡£è‡ªåŠ¨å…¥åº“ (ç›‘å¬ data/import)
+title MyProject ÎÄµµ×Ô¶¯Èë¿â (¼àÌı data/import)
 cd /d "%~dp0backend"
 
-rem é¦–æ¬¡è¿è¡Œè‡ªåŠ¨å»º venv + è£…ä¾èµ–ï¼ˆå·²å°±ç»ªåˆ™é™é»˜ç§’è¿‡ï¼‰
+rem Ê×´ÎÔËĞĞ×Ô¶¯½¨ venv + ×°ÒÀÀµ£¨ÒÑ¾ÍĞ÷Ôò¾²Ä¬Ãë¹ı£©
 set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
-echo æ­£åœ¨å¯åŠ¨æ–‡æ¡£ç›®å½•ç›‘å¬...
-echo æŠŠæ–‡æ¡£æ”¾è¿› backend\data\import\ å³è‡ªåŠ¨è§£æå…¥åº“ï¼ˆçº¦ 5 ç§’ä¸€è½®ï¼‰
-echo æˆåŠŸæ–‡ä»¶å½’æ¡£åˆ° data\imported\ï¼Œå¤±è´¥æ–‡ä»¶ç§»å…¥ data\import_failed\
-echo æŒ‰ Ctrl+C åœæ­¢ï¼Œå…³é—­çª—å£ä¹Ÿä¼šé€€å‡º
+echo ÕıÔÚÆô¶¯ÎÄµµÄ¿Â¼¼àÌı...
+echo °ÑÎÄµµ·Å½ø backend\data\import\ ¼´×Ô¶¯½âÎöÈë¿â£¨Ô¼ 5 ÃëÒ»ÂÖ£©
+echo ³É¹¦ÎÄ¼ş¹éµµµ½ data\imported\£¬Ê§°ÜÎÄ¼şÒÆÈë data\import_failed\
+echo °´ Ctrl+C Í£Ö¹£¬¹Ø±Õ´°¿ÚÒ²»áÍË³ö
 echo.
 .venv\Scripts\python.exe _watch_ingest.py
 pause

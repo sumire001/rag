@@ -1,18 +1,17 @@
 @echo off
-chcp 65001 >nul
-title å‰ç«¯æœåŠ¡ (é™æ€æœåŠ¡å™¨ :5500)
+title Ç°¶Ë·şÎñ (¾²Ì¬·şÎñÆ÷ :5500)
 cd /d "%~dp0frontend"
 
-rem é¦–æ¬¡è¿è¡Œè‡ªåŠ¨å»º venv + è£…ä¾èµ–ï¼ˆå·²å°±ç»ªåˆ™é™é»˜ç§’è¿‡ï¼‰ï¼Œå‰ç«¯ç›´æ¥ç”¨ venv é‡Œçš„ Python
+rem Ê×´ÎÔËĞĞ×Ô¶¯½¨ venv + ×°ÒÀÀµ£¨ÒÑ¾ÍĞ÷Ôò¾²Ä¬Ãë¹ı£©£¬Ç°¶ËÖ±½ÓÓÃ venv ÀïµÄ Python
 set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
 set "PY=%~dp0backend\.venv\Scripts\python.exe"
 
-echo æ­£åœ¨å¯åŠ¨å‰ç«¯é™æ€æœåŠ¡å™¨ï¼š http://127.0.0.1:5500
-echo è¯·åœ¨æµè§ˆå™¨æ‰“å¼€ï¼š http://127.0.0.1:5500
-echo æŒ‰ Ctrl+C åœæ­¢ï¼Œå…³é—­çª—å£ä¹Ÿä¼šé€€å‡º
+echo ÕıÔÚÆô¶¯Ç°¶Ë¾²Ì¬·şÎñÆ÷£º http://127.0.0.1:5500
+echo ÇëÔÚä¯ÀÀÆ÷´ò¿ª£º http://127.0.0.1:5500
+echo °´ Ctrl+C Í£Ö¹£¬¹Ø±Õ´°¿ÚÒ²»áÍË³ö
 echo.
 "%PY%" -m http.server 5500 --bind 127.0.0.1
 pause

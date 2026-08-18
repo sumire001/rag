@@ -1,19 +1,18 @@
 @echo off
-chcp 65001 >nul
 rem ============================================================
-rem  EduRAG ä¸€é”®çŽ¯å¢ƒå‡†å¤‡ï¼šé¦–æ¬¡è¿è¡Œè‡ªåŠ¨å»º venv + è£…ä¾èµ– + ç”Ÿæˆ .env
-rem  å¹‚ç­‰ï¼šçŽ¯å¢ƒå·²å°±ç»ªæ—¶ç§’è¿‡ï¼Œä¸å½±å“æ—¥å¸¸å¯åŠ¨é€Ÿåº¦
-rem  è¢«å„ start_*.bat è°ƒç”¨ï¼ˆcallï¼‰ï¼Œå¤±è´¥è¿”å›žéž 0
+rem  EduRAG Ò»¼ü»·¾³×¼±¸£ºÊ×´ÎÔËÐÐ×Ô¶¯½¨ venv + ×°ÒÀÀµ + Éú³É .env
+rem  ÃÝµÈ£º»·¾³ÒÑ¾ÍÐ÷Ê±Ãë¹ý£¬²»Ó°ÏìÈÕ³£Æô¶¯ËÙ¶È
+rem  ±»¸÷ start_*.bat µ÷ÓÃ£¨call£©£¬Ê§°Ü·µ»Ø·Ç 0
 rem ============================================================
 setlocal
 cd /d "%~dp0backend"
 
-rem ---- å·²å°±ç»ªåˆ™ç›´æŽ¥è¿”å›žï¼ˆè¢« start_*.bat è°ƒç”¨æ—¶é™é»˜ï¼Œå•ç‹¬åŒå‡»æ—¶ç»™å‡ºæç¤ºï¼‰----
+rem ---- ÒÑ¾ÍÐ÷ÔòÖ±½Ó·µ»Ø£¨±» start_*.bat µ÷ÓÃÊ±¾²Ä¬£¬µ¥¶ÀË«»÷Ê±¸ø³öÌáÊ¾£©----
 if exist ".venv\Scripts\python.exe" (
     if exist ".env" (
         if not defined SETUP_SILENT (
             echo.
-            echo [çŽ¯å¢ƒ] å·²å°±ç»ªï¼šè™šæ‹ŸçŽ¯å¢ƒä¸Žä¾èµ–å®Œæ•´ï¼Œæ— éœ€é‡æ–°å®‰è£…ã€‚
+            echo [»·¾³] ÒÑ¾ÍÐ÷£ºÐéÄâ»·¾³ÓëÒÀÀµÍêÕû£¬ÎÞÐèÖØÐÂ°²×°¡£
             echo.
             timeout /t 3 >nul
         )
@@ -22,55 +21,55 @@ if exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo [çŽ¯å¢ƒ] é¦–æ¬¡è¿è¡Œæ£€æµ‹ï¼šå¼€å§‹å‡†å¤‡ Python è™šæ‹ŸçŽ¯å¢ƒä¸Žä¾èµ–ï¼ˆå·²è£…è¿‡åˆ™è‡ªåŠ¨è·³è¿‡ï¼‰...
+echo [»·¾³] Ê×´ÎÔËÐÐ¼ì²â£º¿ªÊ¼×¼±¸ Python ÐéÄâ»·¾³ÓëÒÀÀµ£¨ÒÑ×°¹ýÔò×Ô¶¯Ìø¹ý£©...
 echo.
 
-rem ---- 1. æ‰¾ä¸€ä¸ªå¯ç”¨çš„ç³»ç»Ÿ Python ----
+rem ---- 1. ÕÒÒ»¸ö¿ÉÓÃµÄÏµÍ³ Python ----
 set "PYTHON_CMD="
 python --version >nul 2>&1 && set "PYTHON_CMD=python"
 if not defined PYTHON_CMD (
     py -3 --version >nul 2>&1 && set "PYTHON_CMD=py -3"
 )
 if not defined PYTHON_CMD (
-    echo [é”™è¯¯] æœªæ£€æµ‹åˆ° Pythonï¼Œè¯·å…ˆå®‰è£… Python 3.10 æˆ–æ›´é«˜ç‰ˆæœ¬ï¼š
+    echo [´íÎó] Î´¼ì²âµ½ Python£¬ÇëÏÈ°²×° Python 3.10 »ò¸ü¸ß°æ±¾£º
     echo         https://www.python.org/downloads/
-    echo         å®‰è£…æ—¶è¯·åŠ¡å¿…å‹¾é€‰ "Add Python to PATH"ã€‚
+    echo         °²×°Ê±ÇëÎñ±Ø¹´Ñ¡ "Add Python to PATH"¡£
     pause
     exit /b 1
 )
 
-rem ---- 2. åˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒ ----
+rem ---- 2. ´´½¨ÐéÄâ»·¾³ ----
 if not exist ".venv\Scripts\python.exe" (
-    echo [çŽ¯å¢ƒ] åˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒ .venv ...
+    echo [»·¾³] ´´½¨ÐéÄâ»·¾³ .venv ...
     %PYTHON_CMD% -m venv .venv
     if errorlevel 1 (
-        echo [é”™è¯¯] è™šæ‹ŸçŽ¯å¢ƒåˆ›å»ºå¤±è´¥ï¼Œè¯·ç¡®è®¤ Python ç‰ˆæœ¬ >= 3.10
+        echo [´íÎó] ÐéÄâ»·¾³´´½¨Ê§°Ü£¬ÇëÈ·ÈÏ Python °æ±¾ >= 3.10
         pause
         exit /b 1
     )
 )
 
-rem ---- 3. å®‰è£…ä¾èµ–ï¼ˆé»˜è®¤å›½å†…é•œåƒï¼Œå¤±è´¥è‡ªåŠ¨å›žé€€å®˜æ–¹æºï¼‰----
-echo [çŽ¯å¢ƒ] å®‰è£…ä¾èµ–ï¼Œé¦–æ¬¡çº¦éœ€ 2~5 åˆ†é’Ÿï¼Œè¯·è€å¿ƒç­‰å¾… ...
+rem ---- 3. °²×°ÒÀÀµ£¨Ä¬ÈÏ¹úÄÚ¾µÏñ£¬Ê§°Ü×Ô¶¯»ØÍË¹Ù·½Ô´£©----
+echo [»·¾³] °²×°ÒÀÀµ£¬Ê×´ÎÔ¼Ðè 2~5 ·ÖÖÓ£¬ÇëÄÍÐÄµÈ´ý ...
 set "PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple"
 ".venv\Scripts\python.exe" -m pip install --upgrade pip -i %PIP_INDEX% >nul 2>&1
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt -i %PIP_INDEX%
 if errorlevel 1 (
-    echo [æç¤º] å›½å†…é•œåƒå®‰è£…å¤±è´¥ï¼Œå›žé€€å®˜æ–¹æºé‡è¯• ...
+    echo [ÌáÊ¾] ¹úÄÚ¾µÏñ°²×°Ê§°Ü£¬»ØÍË¹Ù·½Ô´ÖØÊÔ ...
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
     if errorlevel 1 (
-        echo [é”™è¯¯] ä¾èµ–å®‰è£…å¤±è´¥ï¼Œè¯·æ£€æŸ¥ç½‘ç»œåŽé‡æ–°è¿è¡Œæœ¬è„šæœ¬
+        echo [´íÎó] ÒÀÀµ°²×°Ê§°Ü£¬Çë¼ì²éÍøÂçºóÖØÐÂÔËÐÐ±¾½Å±¾
         pause
         exit /b 1
     )
 )
 
-rem ---- 4. ç”Ÿæˆ .envï¼ˆä¸å­˜åœ¨æ—¶ï¼‰----
+rem ---- 4. Éú³É .env£¨²»´æÔÚÊ±£©----
 if not exist ".env" (
     copy ".env.example" ".env" >nul
-    echo [çŽ¯å¢ƒ] å·²ä»Ž .env.example ç”Ÿæˆ .envï¼ˆé»˜è®¤ Echo ç¦»çº¿æ¨¡å¼ï¼Œæ— éœ€ä»»ä½• Keyï¼‰
+    echo [»·¾³] ÒÑ´Ó .env.example Éú³É .env£¨Ä¬ÈÏ Echo ÀëÏßÄ£Ê½£¬ÎÞÐèÈÎºÎ Key£©
 )
 
-echo [çŽ¯å¢ƒ] å°±ç»ªï¼šè™šæ‹ŸçŽ¯å¢ƒ + ä¾èµ– + .env å‡å·²å‡†å¤‡
+echo [»·¾³] ¾ÍÐ÷£ºÐéÄâ»·¾³ + ÒÀÀµ + .env ¾ùÒÑ×¼±¸
 endlocal
 exit /b 0

@@ -1,16 +1,15 @@
 @echo off
-chcp 65001 >nul
-title é£žä¹¦æœºå™¨äººé€šé“ (é•¿è¿žæŽ¥)
+title ·ÉÊé»úÆ÷ÈËÍ¨µÀ (³¤Á¬½Ó)
 cd /d "%~dp0backend"
 
-rem é¦–æ¬¡è¿è¡Œè‡ªåŠ¨å»º venv + è£…ä¾èµ– + ç”Ÿæˆ .envï¼ˆå·²å°±ç»ªåˆ™é™é»˜ç§’è¿‡ï¼‰
+rem Ê×´ÎÔËÐÐ×Ô¶¯½¨ venv + ×°ÒÀÀµ + Éú³É .env£¨ÒÑ¾ÍÐ÷Ôò¾²Ä¬Ãë¹ý£©
 set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
-echo æ­£åœ¨å¯åŠ¨é£žä¹¦é•¿è¿žæŽ¥é€šé“...
-echo è¯·ç¡®ä¿ .env å·²é…ç½® FEISHU_APP_ID / FEISHU_APP_SECRET
-echo æŒ‰ Ctrl+C åœæ­¢ï¼Œå…³é—­çª—å£ä¹Ÿä¼šé€€å‡º
+echo ÕýÔÚÆô¶¯·ÉÊé³¤Á¬½ÓÍ¨µÀ...
+echo ÇëÈ·±£ .env ÒÑÅäÖÃ FEISHU_APP_ID / FEISHU_APP_SECRET
+echo °´ Ctrl+C Í£Ö¹£¬¹Ø±Õ´°¿ÚÒ²»áÍË³ö
 echo.
 .venv\Scripts\python.exe -m services.feishu.longpoll
 pause
