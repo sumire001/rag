@@ -8,9 +8,15 @@ rem ============================================================
 setlocal
 cd /d "%~dp0backend"
 
-rem ---- 已就绪则直接返回 ----
+rem ---- 已就绪则直接返回（被 start_*.bat 调用时静默，单独双击时给出提示）----
 if exist ".venv\Scripts\python.exe" (
     if exist ".env" (
+        if not defined SETUP_SILENT (
+            echo.
+            echo [环境] 已就绪：虚拟环境与依赖完整，无需重新安装。
+            echo.
+            timeout /t 3 >nul
+        )
         exit /b 0
     )
 )

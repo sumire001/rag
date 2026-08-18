@@ -3,7 +3,8 @@ chcp 65001 >nul
 title MyProject 文档自动入库 (监听 data/import)
 cd /d "%~dp0backend"
 
-rem 首次运行自动建 venv + 装依赖（已就绪则秒过）
+rem 首次运行自动建 venv + 装依赖（已就绪则静默秒过）
+set "SETUP_SILENT=1"
 call "%~dp0setup_env.bat"
 if errorlevel 1 exit /b 1
 
