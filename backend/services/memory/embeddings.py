@@ -135,6 +135,11 @@ def _resolve_local_model_path() -> str:
         local = snapshot_download(model_name, cache_dir=cache_dir)
         logger.info("已从 ModelScope 下载模型：%s -> %s", model_name, local)
         return local
+    except ModuleNotFoundError:
+        logger.warning(
+            "未安装 modelscope，无法从魔搭下载（可 pip install modelscope，"
+            "或设 MEMORY_EMBEDDING_MODEL_DIR 指向已有模型目录）；回退 HuggingFace"
+        )
     except Exception as e:
         logger.warning("ModelScope 下载失败，回退 HuggingFace：%s", e)
 

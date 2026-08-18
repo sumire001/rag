@@ -8,9 +8,18 @@ rem ============================================================
 setlocal
 cd /d "%~dp0backend"
 
-rem ---- Already ready? Return immediately ----
+rem CN mirror first (used by both first-run install and incremental check)
+set "PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple"
+
+rem ---- Already ready? Verify deps (incremental) and return ----
 if exist ".venv\Scripts\python.exe" (
     if exist ".env" (
+        rem New packages may have been added to requirements.txt by git pull;
+        rem pip install -r is a no-op (1-3s) when everything is already satisfied.
+        ".venv\Scripts\python.exe" -m pip install -q -r requirements.txt -i %PIP_INDEX% >nul 2>&1
+        if errorlevel 1 (
+            ".venv\Scripts\python.exe" -m pip install -q -r requirements.txt >nul 2>&1
+        )
         if not defined SETUP_SILENT (
             echo.
             echo [env] Ready: virtual environment and dependencies already installed.
@@ -52,7 +61,6 @@ if not exist ".venv\Scripts\python.exe" (
 
 rem ---- 3. Install dependencies (CN mirror first, fallback to official PyPI) ----
 echo [env] Installing dependencies, first time takes 2-5 minutes...
-set "PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple"
 ".venv\Scripts\python.exe" -m pip install --upgrade pip -i %PIP_INDEX% >nul 2>&1
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt -i %PIP_INDEX%
 if errorlevel 1 (
